@@ -1,0 +1,218 @@
+Buglog
+-- Documents the bug made in MP3
+
+Extra Credit:
+-- In signal.c:
+    Issue: part 2 of the sig test would result in a looping segfault.
+    Cause: Maybe due to the potential errors in the stack, which is maintained in signal.c and sys_sigreturn().
+    Not Fixed.
+
+Checkpoint 5
+-- In task.c
+    Issue: Terminal 3 will run program opened in Terminal 1;
+    Cause: Pid was mis-set because of having more programs and terminals than in checkpoint 4.
+    Solution: Adding a bit mask to keep track of available pid. (Fixed by Haozhe Si)
+
+-- In scheduler.c
+    Issue: Pingpong and fish runs very slow;
+    Cause: The order of sending highbyte and lowbyte of frequency when initiating PIT was wrong;
+    Solution: Switch the order back. (Fixed by Haozhe Si)
+
+-- In rtc.c:
+    Issue: Virtualized RTC causing page fault;
+    Cause: Have leaks for interrupt to happed;
+    Solution: Set more critical sections in syscall.c. (Fixed by Haozhe Si)
+
+-- In scheduler.c:
+    Issue: Shell was executed in a wrong order;
+    Cause: Scheduling makes the execution logic changed;
+    Solution: Rewrite execute_shell. (Fixed by Haozhe Si)
+
+Checkpoint 4
+-- In rtc.c:
+    Issue: rtc_read was blocked and cannot raise signal.
+    Cause: IF flag was cleared by interrupt gate.
+    Solution: sti in syscall handler. (Fixed by Haozhe Si)
+
+-- In system_call.c:
+    Issue: Exiting multiple shells will cause reaching maximum number of processes.
+    Cause: Not decreasing process count when exiting the outmost shell.
+    Solution: Adding a function to decrease the process_cnt before exiting outmost shell. (Fixed by Shaobo Li)
+
+-- In file_sys_driver.c:
+    Issue: File operations function table points to wrong functions.
+    Cause: FIle type was mis-set, RTC and file type are swapped.
+    Solution: Switch back. (Fixed by Haozhe Si)
+
+-- In terminal_driver.c:
+    Issue：Cannot print all the words in the verlarge txt and the cat can't print the while frame.
+    Cause: The terminal_write didn't write all the words in the input bufffer.
+    Solution: Just changed the way terminal_write's function to directly write to the screen. (Fixed by Shaobo Li)
+
+-- In rtc.c:
+    Issue: "cat rtc" would return after a random period of time.
+    Cause: rtc_open() does not reset the cycle.
+    Solution: Modified change_rate() to first disable periodic count and then enable it to reset the cycle. (Fixed by Haochen Shen)
+
+Checkpoint 3
+-- In file_sys_driver.c:
+    Issue: Invoking page fault exception when first executing the program.
+    Cause: The address of file operation table is 0x0 when assigning value to it.
+    Solution: Define the structure instead of structure pointer in "x86_desc.h". (Fixed by Haozhe Si)
+
+-- In file_sys_driver.c:
+    Issue: Invoking page fault exception when laoding executable file.
+    Cause: Pointer defined in kernel function will access invalid address.
+    Solution: Define parameters and passing their address into functions instead of define pointers. (Fixed by Haozhe Si)
+
+-- In file_sys_driver.c:
+    Issue: Invoking page fault exception when jumping to user program.
+    Cause: The eip value was wronly calculated.
+    Solution: Inverse the order of adding up all bytes to calculate the address. (Fixed by Haozhe Si)
+
+-- In interrupt_wrapper.S
+    Issue: Invoking page fault exception after entering user program.
+    Cause: Wrong syscall was invoke given a syscall number.
+    Solution: Add ".long 0" to adjust offset. (Fixed by Haozhe Si)
+
+-- In interrupt_wrapper.S
+    Issue: Invoking General protection fault exception after entering user program.
+    Cause: Iret was not functioning correctly due to junk on stcak.
+    Solution: Rewrite "RESTORE_ALL" to maintain the stack. (Fixed by Haozhe Si)
+
+-- In system_call.c:
+    Issue: Cannot find the file to execute.
+    Cause: Check_executable constantly gives a wrong output since file name was parsed wrongly.
+    Solution: Extent the fname buffer for '\0'. (Fixed by Haozhe Si and Shaobo Li)
+
+-- In system_call.c:
+    Issue: Cannot switch back to parent kernel stack.
+    Cause: Did not set tss in sys_halt.
+    Solution: Set tss cooresponding to parent pcb. (Fixed by Haozhe Si)
+
+-- In file_sys_driver.c:
+    Issue: ls cannot run two times, second will cause page fault.
+    Cause: Buffer size went wrong during passing parameters.
+    Solution: Add "\0" at the end of the buffer. (Fixed by Haozhe Si)
+
+-- In system_call.c:
+    Issue: Syscalls on files causing Page fault.
+    Cause: Not checking the fd range.
+    Solution: Check fd range at each syscall. (Fixed by Haozhe Si and Shaobo Li)
+
+-- In system_call.c:
+    Issue: Syscall wrapper does not iret to the correct place when a task halts.
+    Cause: -
+    Solution: Add an Cli and set IF bits at the IRET function at the execute. (Fixed by Shaobo Li)
+
+Checkpoint 2
+-- In terminal_driver.c:
+    Issue: Scrolling up causing a half-screen displacment of screen content.
+    Cause: Forget to time NUM_COLS by two when shifting video memory.
+    Solution: Time NUM_COLS by two when shifting video memory. (Fixed by Haozhe Si)
+
+-- In terminal_driver.c:
+    Issue: Terminal read dosen't function correctly when typing.
+    Cause: Forget to disable interrupts.
+    Solution: Add CLI and STI. (Fixed by Shaobo Li)
+
+-- In terminal_driver.c:
+    Issue: Terminal read dosen't read and returns.
+    Cause: The flag on the while loop is not volatile.
+    Solution: Mark the flag as volatile. (Fixed by Shaobo Li)
+
+-- In terminal_driver.c:
+    Issue: terminal_write does not change line for a small buffer.
+    Cause: There's no change line mark at the end of the buffer.
+    Solution: Change the character at the end of the buffer to the change line mark. (Fixed by Haochen Shen)
+
+-- In keyboard.c:
+    Issue: Ctrl L doesn't clears buffer.
+    Cause: The for loop only goes into it by one time.
+    Solution: The variable is changed in the for loop and delete the line just fixed. (Fixed by Shaobo Li)
+
+-- In keyboard.c:
+    Issue: Reprint the buffer function causes page falut.
+    Cause: The type of the buffer is not correct.
+    Solution: Change char into char*. (Fixed by Shaobo Li)
+
+-- In keyboard.c:
+    Issue: The cursor will go to a very strange position after scroll up
+    Cause: The cursor is set to screen_x and screen_y position in func scroll up.
+    Solution: Add a count var and reset cursor position by count. (Fixed by Shaobo Li)
+
+-- In lib.c:
+    Issue: Printing strings longer than the terminal witdh will overlap with the beginning of the ling.
+    Cause: screen_y can never get updated because screen_x was modified before updating screen_y.
+    Solution: Update screen_y before screen_x. (Fixed by Haozhe Si)
+
+-- In filesys_driver.c:
+    Issue: Can only print "ELF" several control characters when doing file_read.
+    Cause: Used prarmeter "inode" as the index of inode blocks while they should be the index for "dentry".
+    Solution: Read the index of inode from dentry which specified by input index. (Fixed by Haozhe Si)
+
+-- In filesys_driver.c:
+    Issue: Type error while using strlen() and strncmp().
+    Cause: undeclared conversion between signed and unsigned variables.
+    Solution: Convert unsigned variables to signed ones (Fixed by Haochen Shen)
+
+Checkpoint 1
+-- In i8259.c:
+   Issue: RTC does not raise interrupt after enabled.
+   Cause: IR2 is not enabled on master, thus the interrupt rasied on slave cannot pass.
+   Solution: Set a mask that enables IR2 to master during the initialization of i8259. (Fixed by Haozhe Si)
+
+-- In keyboard.c:
+   Issue: Keyboard cannot deal press and release well.
+   Cause: -
+   Solution: 1. Mark variable “key“ as “volatile“; 2. Rewrite the decision rule used for deciding press or release. (Fixed by Haozhe Si)
+
+-- In idt.c:
+   Issue: IDT cannot successfully initialized, exceptions cannot raise in test.
+   Cause: -
+   Solution: Write the whole function and fill all not used vectors as not defined in advance. (Fixed by Shaobo Li)
+
+-- In idt.c:
+   Issue: Keyboard easily raise “general protection exception“ when typing two keys simultaneously
+   Cause: "The starting address of a floatingpoint operand falls outside a segment’s size."
+   Solution: Add ASM wrapper for the handler to maintain the stack. (Fixed by Haozhe Si)
+
+-- In rtc.c:
+   Issue: RTC does not generate interrupt.
+   Cause: The oscillator was mistakenly set on register A, which stops the oscillator from output.
+   Solution: Delete the code for setting DV in register A. (Fixed by Shaobo Li)
+
+-- In paging.S:
+   Issue: PG was not enabled
+   Cause: Forget to add “$“ before the label when or-ing the MSB of “%CR0“.
+   Solution: Add the "$".(Fixed by Haozhe Si)
+
+-- In paging_init.c:
+   Issue: Video memory was mapped to incorrect location.
+   Cause: PTE offest was mis-calculated.
+   Solution: RTDC and set it to the correct offset. (Fixed by Haozhe Si)
+
+-- In paging_init.c:
+   Issue: Kernel cannot be mapped.
+   Cause: PDE entries was incorrectly set, global was not set.
+   Solution: Add structure for PDE and PTE in “x86_desc.h“ (Fixed by Haozhe Si)
+
+-- In paging_init.c:
+   Issue: Kernel was mapped, but is off place, and causing booting failure.
+   Cause: PSE was not set, size extention was not enable.
+   Solution: Write an ASM to set the PSE bit in CR4. (Fixed by Haozhe Si)
+
+-- In paging_init.c:
+   Issue: Global bit of Kernel PDE was set, but global seems not working.
+   Cause: PGE entries was incorrectly set, global was not set.
+   Solution: Write an ASM to set the PSE bit in CR4. (Fixed by Haozhe Si)
+
+-- In paging_init.c:
+   Issue: Program seems not working after enable paging, and keep rebooting.
+   Cause: Video memory address was mis-set due to partial modify of the code during developing.
+   Solution: Fix the memory address mis-set. (Fixed by Haozhe Si)
+
+-- In tests.c:
+   Issue: Accessing memory address after 0xB8FFC or 0x7FFFFC will cause Page Fault where they should be valid address.
+   Cause: Using unit32_t to access the memory address will cause accessing invalid memory address.
+   Solution: Use uint8_t to access the memory address instead. (Fixed by Haozhe Si)

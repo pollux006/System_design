@@ -1,0 +1,33 @@
+boot.o: boot.S multiboot.h x86_desc.h types.h idt.h
+interrupt_wrapper.o: interrupt_wrapper.S x86_desc.h types.h
+paging.o: paging.S
+x86_desc.o: x86_desc.S x86_desc.h types.h
+file_sys_driver.o: file_sys_driver.c file_sys_driver.h types.h lib.h \
+  terminal_driver.h keyboard.h x86_desc.h pcb.h rtc.h
+i8259.o: i8259.c i8259.h types.h lib.h terminal_driver.h keyboard.h
+idt.o: idt.c idt.h x86_desc.h types.h lib.h terminal_driver.h keyboard.h \
+  rtc.h tests.h system_call.h file_sys_driver.h
+kernel.o: kernel.c multiboot.h types.h x86_desc.h lib.h terminal_driver.h \
+  keyboard.h i8259.h debug.h tests.h paging_init.h rtc.h \
+  file_sys_driver.h system_call.h scheduler.h
+keyboard.o: keyboard.c keyboard.h x86_desc.h types.h lib.h \
+  terminal_driver.h i8259.h system_call.h file_sys_driver.h pcb.h \
+  paging_init.h
+lib.o: lib.c lib.h types.h terminal_driver.h keyboard.h
+paging_init.o: paging_init.c types.h paging_init.h x86_desc.h
+pcb.o: pcb.c pcb.h types.h x86_desc.h file_sys_driver.h lib.h \
+  terminal_driver.h keyboard.h
+rtc.o: rtc.c rtc.h types.h i8259.h lib.h terminal_driver.h keyboard.h \
+  x86_desc.h pcb.h
+scheduler.o: scheduler.c scheduler.h types.h lib.h terminal_driver.h \
+  keyboard.h i8259.h system_call.h file_sys_driver.h x86_desc.h pcb.h \
+  task.h paging_init.h
+system_call.o: system_call.c system_call.h types.h file_sys_driver.h \
+  lib.h terminal_driver.h keyboard.h x86_desc.h pcb.h task.h \
+  paging_init.h rtc.h
+task.o: task.c paging_init.h types.h x86_desc.h task.h pcb.h lib.h \
+  terminal_driver.h keyboard.h
+terminal_driver.o: terminal_driver.c terminal_driver.h types.h keyboard.h \
+  lib.h paging_init.h x86_desc.h pcb.h system_call.h file_sys_driver.h
+tests.o: tests.c tests.h x86_desc.h types.h lib.h terminal_driver.h \
+  keyboard.h i8259.h rtc.h idt.h file_sys_driver.h
